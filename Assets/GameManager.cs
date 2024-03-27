@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,16 +8,20 @@ public class GameManager : MonoBehaviour
 
     PauseState pause = PauseState.OFF;
 
+    GameObject  racket;
+    Slider      slider;
+
     void Start()
     {
-
+        racket = GameObject.Find("Racket");
+        slider = GameObject.Find("Slider").GetComponent<Slider>();
     }
 
     void Update()
     {
-        transform.Rotate(new Vector3(0,0,5.0f*Time.deltaTime));
-
-        KeyInput();        
+        KeyInput();
+        racket.transform.position = new Vector3(slider.value,
+            racket.transform.position.y, racket.transform.position.z);    
     }
 
     void KeyInput()
@@ -30,7 +35,18 @@ public class GameManager : MonoBehaviour
         // ポーズが解除されている場合のみ入力を受け付ける
         if(pause == PauseState.OFF){
             // 入力処理
+            if(Input.GetKey(KeyCode.LeftArrow) && slider.value > slider.minValue){
+                slider.value -= 8.0f * Time.deltaTime;
+            }
+            if(Input.GetKey(KeyCode.RightArrow) && slider.value < slider.maxValue){
+                slider.value += 8.0f * Time.deltaTime;
+            }
+
         }
+
+        // 終了
+        if(Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
+
     }
 
     public void GamePause(bool keyResume)
