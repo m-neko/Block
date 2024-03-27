@@ -6,22 +6,50 @@ public class GameManager : MonoBehaviour
     enum GameState { OPENING, GAME, ENDING }
     enum PauseState { OFF, KEY_RESUME, ON }
 
-    PauseState pause = PauseState.OFF;
+    // ゲーム管理
+    int         stage;
+    int         score;
+    int         hiscore;
+    PauseState  pause = PauseState.OFF;
 
+    // オブジェクト
+    GameObject  ball;
     GameObject  racket;
+    Text        txtHiScore;
+    Text        txtScore;
+    Text        txtStage;
     Slider      slider;
 
     void Start()
     {
+        ball = GameObject.Find("Ball");
         racket = GameObject.Find("Racket");
+        txtHiScore = GameObject.Find("HiScore").GetComponent<Text>();
+        txtScore = GameObject.Find("Score").GetComponent<Text>();
+        txtStage = GameObject.Find("Stage").GetComponent<Text>();
         slider = GameObject.Find("Slider").GetComponent<Slider>();
+        stage = 1;
+        score = 0;
+        hiscore = 0;
+        txtHiScore.text = hiscore.ToString();
+        txtScore.text = score.ToString();
+        GameStart();
     }
 
     void Update()
     {
+        txtHiScore.text = hiscore.ToString();
+        txtScore.text = score.ToString();
+        txtStage.text = stage.ToString();
+
         KeyInput();
         racket.transform.position = new Vector3(slider.value,
             racket.transform.position.y, racket.transform.position.z);    
+    }
+
+    void GameStart()
+    {
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-2.0f,-2.0f);
     }
 
     void KeyInput()
@@ -62,6 +90,12 @@ public class GameManager : MonoBehaviour
     {
         pause = PauseState.OFF;
         Time.timeScale = 1.0f;       
+    }
+
+    public void HitBlock()
+    {
+        score += 100;
+        if(score > hiscore) hiscore = score;
     }
 
 }
