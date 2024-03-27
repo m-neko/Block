@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,15 +14,25 @@ public class GameManager : MonoBehaviour
     PauseState  pause = PauseState.OFF;
 
     // オブジェクト
-    GameObject  ball;
-    GameObject  racket;
-    Text        txtHiScore;
-    Text        txtScore;
-    Text        txtStage;
-    Slider      slider;
+    public GameObject   block_pf;
+    List<Color>         blockColorList;
+    GameObject          ball;
+    GameObject          racket;
+    Text                txtHiScore;
+    Text                txtScore;
+    Text                txtStage;
+    Slider              slider;
 
     void Start()
     {
+        blockColorList = new List<Color>();
+        blockColorList.Add(Color.red);
+        blockColorList.Add(Color.green);
+        blockColorList.Add(Color.blue);
+        blockColorList.Add(Color.cyan);
+        blockColorList.Add(Color.yellow);
+        blockColorList.Add(Color.gray);
+        blockColorList.Add(Color.magenta);
         ball = GameObject.Find("Ball");
         racket = GameObject.Find("Racket");
         txtHiScore = GameObject.Find("HiScore").GetComponent<Text>();
@@ -49,7 +60,15 @@ public class GameManager : MonoBehaviour
 
     void GameStart()
     {
-        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-2.0f,-2.0f);
+        for(int i=0; i<5; i++){
+            for(int j=0; j<3; j++){
+                GameObject block = Instantiate(block_pf, new Vector3(-2.0f+i,3.5f-j*0.28f,0.0f), Quaternion.identity);
+                int colorIndex = Random.RandomRange(0, blockColorList.Count);
+                block.GetComponent<SpriteRenderer>().color = blockColorList[colorIndex];
+            }
+        }
+        
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-3.0f,-2.0f);
     }
 
     void KeyInput()
