@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     int         stage;
     int         score;
     int         hiscore;
+    int         blockCount;
+    float       ballSpeed;
     PauseState  pause = PauseState.OFF;
 
     // オブジェクト
@@ -25,25 +27,16 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        blockColorList = new List<Color>();
-        blockColorList.Add(Color.red);
-        blockColorList.Add(Color.green);
-        blockColorList.Add(Color.blue);
-        blockColorList.Add(Color.cyan);
-        blockColorList.Add(Color.yellow);
-        blockColorList.Add(Color.gray);
-        blockColorList.Add(Color.magenta);
-        ball = GameObject.Find("Ball");
-        racket = GameObject.Find("Racket");
-        txtHiScore = GameObject.Find("HiScore").GetComponent<Text>();
-        txtScore = GameObject.Find("Score").GetComponent<Text>();
-        txtStage = GameObject.Find("Stage").GetComponent<Text>();
-        slider = GameObject.Find("Slider").GetComponent<Slider>();
+        Initialize();
+
         stage = 1;
         score = 0;
         hiscore = 0;
+        ballSpeed = 3.0f;
+        blockCount = 0;
         txtHiScore.text = hiscore.ToString();
         txtScore.text = score.ToString();
+
         GameStart();
     }
 
@@ -58,6 +51,25 @@ public class GameManager : MonoBehaviour
             racket.transform.position.y, racket.transform.position.z);    
     }
 
+    void Initialize()
+    {
+        blockColorList = new List<Color>();
+        blockColorList.Add(Color.red);
+        blockColorList.Add(Color.green);
+        blockColorList.Add(Color.blue);
+        blockColorList.Add(Color.cyan);
+        blockColorList.Add(Color.yellow);
+        blockColorList.Add(Color.gray);
+        blockColorList.Add(Color.magenta);
+
+        ball = GameObject.Find("Ball");
+        racket = GameObject.Find("Racket");
+        txtHiScore = GameObject.Find("HiScore").GetComponent<Text>();
+        txtScore = GameObject.Find("Score").GetComponent<Text>();
+        txtStage = GameObject.Find("Stage").GetComponent<Text>();
+        slider = GameObject.Find("Slider").GetComponent<Slider>();
+    }
+
     void GameStart()
     {
         for(int i=0; i<5; i++){
@@ -65,10 +77,11 @@ public class GameManager : MonoBehaviour
                 GameObject block = Instantiate(block_pf, new Vector3(-2.0f+i,3.5f-j*0.28f,0.0f), Quaternion.identity);
                 int colorIndex = Random.RandomRange(0, blockColorList.Count);
                 block.GetComponent<SpriteRenderer>().color = blockColorList[colorIndex];
+                blockCount++;
             }
         }
         
-        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-3.0f,-2.0f);
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
     }
 
     void KeyInput()
@@ -114,7 +127,22 @@ public class GameManager : MonoBehaviour
     public void HitBlock()
     {
         score += 100;
+        blockCount--;
         if(score > hiscore) hiscore = score;
+        if(blockCount<=0) GamePause(false);     // ゲームクリア
+    }
+
+    public void HitRacket()
+    {
+        Vector3 vec = transform.GetComponent<Rigidbody2D>().velocity;
+        transform.GetComponent<Rigidbody2D>().velocity = new Vector3(-1.0f*Random.RandomRange(0.5f,1.0f)*vec.x*ballSpeed,1.0f*ballSpeed,0);
+    }
+
+    public void MissRacket()
+    {
+        GameObject.Find("SndMiss").GetComponent<AudioSource>().Play();
+        ball.transform.position = new Vector3(0.0f,1.0f,0.0f);
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
     }
 
 }

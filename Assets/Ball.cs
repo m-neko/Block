@@ -25,5 +25,12 @@ public class Ball : MonoBehaviour
             collision.gameObject.GetComponent<Collider2D>().enabled = false;
             gameManager.HitBlock();
         }
+        if(collision.gameObject.tag == "Racket"){
+            gameManager.HitRacket();
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D collision){
+        gameManager.MissRacket();
     }
 }
