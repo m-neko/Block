@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,10 +10,12 @@ public class GameManager : MonoBehaviour
     enum PauseState { OFF, KEY_RESUME, ON }
 
     // ゲーム管理
+    bool        hiscoreReset = true;
     int         stage;
     int         score;
     int         hiscore;
     int         blockCount;
+    int         ballCount;
     float       ballSpeed;
     PauseState  pause = PauseState.OFF;
 
@@ -23,6 +27,8 @@ public class GameManager : MonoBehaviour
     Text                txtHiScore;
     Text                txtScore;
     Text                txtStage;
+    Text                txtBallCount;
+    Text                txtMain;
     Slider              slider;
 
     void Start()
@@ -31,9 +37,15 @@ public class GameManager : MonoBehaviour
 
         stage = 1;
         score = 0;
-        hiscore = 0;
         ballSpeed = 3.0f;
         blockCount = 0;
+        ballCount = 3;
+        if(!hiscoreReset && PlayerPrefs.HasKey("HiScore")){
+            hiscore = PlayerPrefs.GetInt("HiScore");
+        }else{
+            hiscore = 0;
+        }
+
         txtHiScore.text = hiscore.ToString();
         txtScore.text = score.ToString();
 
@@ -67,20 +79,23 @@ public class GameManager : MonoBehaviour
         txtHiScore = GameObject.Find("HiScore").GetComponent<Text>();
         txtScore = GameObject.Find("Score").GetComponent<Text>();
         txtStage = GameObject.Find("Stage").GetComponent<Text>();
+        txtBallCount = GameObject.Find("BallCount").GetComponent<Text>();
+        txtMain = GameObject.Find("MainText").GetComponent<Text>();
         slider = GameObject.Find("Slider").GetComponent<Slider>();
     }
 
     void GameStart()
     {
-        for(int i=0; i<5; i++){
-            for(int j=0; j<3; j++){
+        txtMain.text = "";
+        for(int i=0; i<1; i++){
+            for(int j=0; j<1; j++){
                 GameObject block = Instantiate(block_pf, new Vector3(-2.0f+i,3.5f-j*0.28f,0.0f), Quaternion.identity);
                 int colorIndex = Random.RandomRange(0, blockColorList.Count);
                 block.GetComponent<SpriteRenderer>().color = blockColorList[colorIndex];
                 blockCount++;
             }
         }
-        
+        ball.transform.position = new Vector3(0.0f,1.0f,0.0f);
         ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
     }
 
@@ -109,6 +124,24 @@ public class GameManager : MonoBehaviour
 
     }
 
+    void GameClear()
+    {
+        txtMain.text = "STAGE CLEAR!!";
+        GameObject.Find("SndClear").GetComponent<AudioSource>().Play();
+        StartCoroutine(BallInit());
+    }
+
+    IEnumerator BallInit()
+    {
+        GamePause(false);
+        yield return new WaitForSecondsRealtime(2);
+        txtMain.text = "";
+        stage++;
+        ballSpeed += 1.0f; 
+        GameStart();
+        GameResume();
+    }
+
     public void GamePause(bool keyResume)
     {
         if(keyResume)
@@ -128,8 +161,11 @@ public class GameManager : MonoBehaviour
     {
         score += 100;
         blockCount--;
-        if(score > hiscore) hiscore = score;
-        if(blockCount<=0) GamePause(false);     // ゲームクリア
+        if(score > hiscore){
+            hiscore = score;
+            PlayerPrefs.SetInt("HiScore",hiscore);
+        }
+        if(blockCount<=0) GameClear();
     }
 
     public void HitRacket()
@@ -141,8 +177,15 @@ public class GameManager : MonoBehaviour
     public void MissRacket()
     {
         GameObject.Find("SndMiss").GetComponent<AudioSource>().Play();
-        ball.transform.position = new Vector3(0.0f,1.0f,0.0f);
-        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
+        ballCount--;
+        txtBallCount.text = ballCount.ToString();
+        if(ballCount>=1){
+            ball.transform.position = new Vector3(0.0f,1.0f,0.0f);
+            ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
+        }else{
+            txtMain.text = "GAME OVER";
+            GamePause(false);
+        }
     }
 
 }
