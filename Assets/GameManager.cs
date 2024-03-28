@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     int         stage;
     int         score;
     int         hiscore;
+    int         addscore;
     int         blockCount;
     int         ballCount;
     float       ballSpeed;
@@ -37,9 +38,10 @@ public class GameManager : MonoBehaviour
 
         stage = 1;
         score = 0;
-        ballSpeed = 3.0f;
+        ballSpeed = 2.0f;
         blockCount = 0;
         ballCount = 3;
+        addscore = 20;
         if(!hiscoreReset && PlayerPrefs.HasKey("HiScore")){
             hiscore = PlayerPrefs.GetInt("HiScore");
         }else{
@@ -87,8 +89,8 @@ public class GameManager : MonoBehaviour
     void GameStart()
     {
         txtMain.text = "";
-        for(int i=0; i<1; i++){
-            for(int j=0; j<1; j++){
+        for(int i=0; i<5; i++){
+            for(int j=0; j<3; j++){
                 GameObject block = Instantiate(block_pf, new Vector3(-2.0f+i,3.5f-j*0.28f,0.0f), Quaternion.identity);
                 int colorIndex = Random.RandomRange(0, blockColorList.Count);
                 block.GetComponent<SpriteRenderer>().color = blockColorList[colorIndex];
@@ -137,7 +139,8 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(2);
         txtMain.text = "";
         stage++;
-        ballSpeed += 1.0f; 
+        ballSpeed += 0.5f;
+        addscore += 20; 
         GameStart();
         GameResume();
     }
@@ -159,8 +162,9 @@ public class GameManager : MonoBehaviour
 
     public void HitBlock()
     {
-        score += 100;
+        score += addscore;
         blockCount--;
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector2(-1.0f*ballSpeed,-1.0f*ballSpeed);
         if(score > hiscore){
             hiscore = score;
             PlayerPrefs.SetInt("HiScore",hiscore);
@@ -171,7 +175,7 @@ public class GameManager : MonoBehaviour
     public void HitRacket()
     {
         Vector3 vec = transform.GetComponent<Rigidbody2D>().velocity;
-        transform.GetComponent<Rigidbody2D>().velocity = new Vector3(-1.0f*Random.RandomRange(0.5f,1.0f)*vec.x*ballSpeed,1.0f*ballSpeed,0);
+        transform.GetComponent<Rigidbody2D>().velocity = new Vector3(-1.0f*ballSpeed,1.0f*ballSpeed,0);
     }
 
     public void MissRacket()

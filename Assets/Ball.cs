@@ -21,8 +21,7 @@ public class Ball : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision){
         GameObject.Find("SndBall").GetComponent<AudioSource>().Play();
         if(collision.gameObject.tag == "Block"){
-            collision.gameObject.GetComponent<Renderer>().enabled = false;
-            collision.gameObject.GetComponent<Collider2D>().enabled = false;
+            Destroy(collision.gameObject);
             gameManager.HitBlock();
         }
         if(collision.gameObject.tag == "Racket"){
@@ -30,7 +29,7 @@ public class Ball : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D collision){
-        gameManager.MissRacket();
+    void OnTriggerEnter2D(Collider2D collider){
+        if(collider.name == "Miss") gameManager.MissRacket();
     }
 }
