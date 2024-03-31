@@ -9,8 +9,18 @@ public class GameManager : MonoBehaviour
     enum GameState { OPENING, GAME, GAMEOVER}
     enum PauseState { OFF, KEY_RESUME, ON }
 
+    // 定数
+    const bool  HISCORE_RESET = false;  // 起動時にハイスコアをリセットするか
+    const float RACKET_SPEED = 8.0f;    // ラケットの移動速度
+    const float BALL_SPEED = 2.0f;      // Stage1のボール速度
+    const int   BALL_COUNT = 3;         // ボール残数
+    const int   STAGE_ADD_SCORE = 20;   // ステージが進むごとに加算する1ブロックあたりの得点
+    const float STAGE_ADD_SPEED = 0.5f; // ステージが進むごとに増加するボールの速度
+    const int   BLOCK_X = 5;            // 横方向のブロック数
+    const int   BLOCK_Y = 3;            // 縦方向のブロック数
+
     // ゲーム管理
-    bool        hiscoreReset = false;
+    bool        hiscoreReset;
     int         stage;
     int         score;
     int         hiscore;
@@ -71,12 +81,13 @@ public class GameManager : MonoBehaviour
 
         ball.GetComponent<Renderer>().enabled = false;
 
+        hiscoreReset = HISCORE_RESET;
         stage = 1;
         score = 0;
-        ballSpeed = 2.0f;
+        ballSpeed = BALL_SPEED;
         blockCount = 0;
-        ballCount = 3;
-        addscore = 20;
+        ballCount = BALL_COUNT;
+        addscore = STAGE_ADD_SCORE;
         gameState = GameState.OPENING;
         if(!hiscoreReset && PlayerPrefs.HasKey("HiScore")){
             hiscore = PlayerPrefs.GetInt("HiScore");
@@ -96,8 +107,8 @@ public class GameManager : MonoBehaviour
     void GameStart()
     {
         txtMain.text = "";
-        for(int i=0; i<5; i++){
-            for(int j=0; j<3; j++){
+        for(int i=0; i<BLOCK_X; i++){
+            for(int j=0; j<BLOCK_Y; j++){
                 GameObject block = Instantiate(block_pf, new Vector3(-2.0f+i,3.5f-j*0.28f,0.0f), Quaternion.identity);
                 int colorIndex = Random.RandomRange(0, blockColorList.Count);
                 block.GetComponent<SpriteRenderer>().color = blockColorList[colorIndex];
@@ -125,10 +136,10 @@ public class GameManager : MonoBehaviour
                     
                     // 入力処理
                     if(Input.GetKey(KeyCode.LeftArrow) && slider.value > slider.minValue){
-                        slider.value -= 8.0f * Time.deltaTime;
+                        slider.value -= RACKET_SPEED * Time.deltaTime;
                     }
                     if(Input.GetKey(KeyCode.RightArrow) && slider.value < slider.maxValue){
-                        slider.value += 8.0f * Time.deltaTime;
+                        slider.value += RACKET_SPEED * Time.deltaTime;
                     }
                     break;
             }
@@ -168,8 +179,8 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(2);
         txtMain.text = "";
         stage++;
-        ballSpeed += 0.5f;
-        addscore += 20; 
+        ballSpeed += STAGE_ADD_SPEED;
+        addscore += STAGE_ADD_SCORE; 
         GameStart();
         GameResume();
     }
